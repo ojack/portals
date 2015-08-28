@@ -100,16 +100,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var AudioProcessing = require('./AudioProcessing.js');
 
-var WIDTH = 20000;
-var HEIGHT = 200;
+var WIDTH;
+var HEIGHT;
 var STEP = 1;
 var VID_STEP = 1;
 var video;
 var context;
 
-var CombinedSlitScan = (function () {
-  function CombinedSlitScan(local_stream, remote_stream) {
-    _classCallCheck(this, CombinedSlitScan);
+var CanvasBlend = (function () {
+  function CanvasBlend(local_stream, remote_stream) {
+    _classCallCheck(this, CanvasBlend);
 
     var context = new AudioContext();
     this.video = document.getElementById("local-stream");
@@ -117,10 +117,13 @@ var CombinedSlitScan = (function () {
     this.remote = document.getElementById("remote-stream");
     this.remote.src = URL.createObjectURL(remote_stream);
     var canvas = document.createElement('canvas');
-    this.context = canvas.getContext('2d');
-    canvas.height = HEIGHT * 3;
+
+    WIDTH = window.innerWidth;
+    HEIGHT = window.innerHeight;
+    canvas.height = HEIGHT;
     canvas.width = WIDTH;
     this.canvas = canvas;
+
     this.outIndex = 0;
     this.vidIndex = 0;
     this.remoteVolume = 0;
@@ -133,7 +136,7 @@ var CombinedSlitScan = (function () {
     //this.remoteAudio = new AudioProcessing(remote_stream, context);
   }
 
-  _createClass(CombinedSlitScan, [{
+  _createClass(CanvasBlend, [{
     key: "toggleProportional",
     value: function toggleProportional() {
       //this.proportional = val;
@@ -181,55 +184,42 @@ var CombinedSlitScan = (function () {
   }, {
     key: "addFrame",
     value: function addFrame() {
-      //.log(this);
-      //console.log(this.video);
-      //console.log(this.context);
-      //console.log(video.videoWidth);
-      //console.log(this);
-      // var locVol =
 
-      //console.log(" local 0" + this.localVolume + " remote "+ this.remoteVolume);
-      //console.log(locVol);
-      // var remoteVol = this.remoteAudio.getVolume();
-      // console.log(remoteVol);
-      this.vidIndex = this.video.videoWidth / 2;
-      var vidHeight = this.video.videoHeight;
-      // console.log(vidHeight);
-      if (this.mode == 1) {
-        var tot = this.localVolume + this.remoteVolume;
-        var localHeight = HEIGHT * 3 * this.localVolume / tot;
-        this.context.drawImage(this.video, this.vidIndex, 0, STEP, vidHeight, this.outIndex, 0, STEP, localHeight);
-        this.context.drawImage(this.remote, this.remote.videoWidth / 2, 0, STEP, this.remote.videoHeight, this.outIndex, localHeight, STEP, HEIGHT * 3 - localHeight);
-      } else if (this.mode == 0) {
-        this.context.drawImage(this.video, this.vidIndex, 0, STEP, vidHeight, this.outIndex, HEIGHT * (1.5 - this.localVolume / 50), STEP, HEIGHT * this.localVolume / 50);
-        this.context.drawImage(this.remote, this.remote.videoWidth / 2, 0, STEP, this.remote.videoHeight, this.outIndex, HEIGHT * 1.5, STEP, HEIGHT * this.remoteVolume / 50);
-      } else {
-        this.context.drawImage(this.video, this.vidIndex, 0, STEP, vidHeight, this.outIndex, 0, STEP, HEIGHT);
-        this.context.drawImage(this.remote, this.remote.videoWidth / 2, 0, STEP, this.remote.videoHeight, this.outIndex, HEIGHT * 2, STEP, HEIGHT);
-        if (this.outIndex % 2 == 0) {
-          this.context.drawImage(this.canvas, this.outIndex, 0, STEP, HEIGHT, this.outIndex, HEIGHT, STEP, HEIGHT);
-        } else {
-          this.context.drawImage(this.canvas, this.outIndex, HEIGHT * 2, STEP, HEIGHT, this.outIndex, HEIGHT, STEP, HEIGHT);
-        }
-      }
-
-      // // 77 draw alternating
-
-      this.outIndex += STEP;
-      // vidIndex += VID_STEP;
-      if (this.outIndex > WIDTH) this.outIndex = 0;
-
-      //if(vidIndex > video.videoWidth) vidIndex = 0;
-
-      //  setTimeout(this.addFrame, 1000);
-      //  console.log("vid index " + this.vidIndex + " out index " + this.outIndex);
+      this.context = this.canvas.getContext('2d');
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.context.globalCompositeOperation = 'overlay';
+      this.context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, WIDTH, HEIGHT);
+      this.context.drawImage(this.remote, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, WIDTH, HEIGHT);
+      //  this.vidIndex = this.video.videoWidth/2;
+      //  var vidHeight = this.video.videoHeight;
+      // // console.log(vidHeight);
+      // if(this.mode==1){
+      //  var tot = this.localVolume+ this.remoteVolume;
+      //  var localHeight = HEIGHT*3*this.localVolume/tot;
+      //   this.context.drawImage(this.video, this.vidIndex, 0, STEP, vidHeight, this.outIndex, 0, STEP, localHeight);
+      //    this.context.drawImage(this.remote, this.remote.videoWidth/2, 0, STEP, this.remote.videoHeight, this.outIndex, localHeight, STEP, HEIGHT*3-localHeight);
+      // } else if(this.mode == 0){
+      //   this.context.drawImage(this.video, this.vidIndex, 0, STEP, vidHeight, this.outIndex, HEIGHT*(1.5-this.localVolume/50), STEP, HEIGHT*this.localVolume/50);
+      //    this.context.drawImage(this.remote, this.remote.videoWidth/2, 0, STEP, this.remote.videoHeight, this.outIndex, HEIGHT*1.5, STEP, HEIGHT*this.remoteVolume/50);
+      // } else {
+      //    this.context.drawImage(this.video, this.vidIndex, 0, STEP, vidHeight, this.outIndex, 0, STEP, HEIGHT);
+      //    this.context.drawImage(this.remote, this.remote.videoWidth/2, 0, STEP, this.remote.videoHeight, this.outIndex, HEIGHT*2, STEP, HEIGHT);
+      //     if(this.outIndex%2==0){
+      //     this.context.drawImage(this.canvas, this.outIndex, 0, STEP, HEIGHT, this.outIndex, HEIGHT, STEP, HEIGHT);
+      //   } else {
+      //     this.context.drawImage(this.canvas, this.outIndex, HEIGHT*2, STEP, HEIGHT, this.outIndex, HEIGHT, STEP, HEIGHT);
+      //   }
+      // }
+      //  this.outIndex += STEP;
+      //     // vidIndex += VID_STEP;
+      //      if(this.outIndex > WIDTH) this.outIndex = 0;
     }
   }]);
 
-  return CombinedSlitScan;
+  return CanvasBlend;
 })();
 
-exports["default"] = CombinedSlitScan;
+exports["default"] = CanvasBlend;
 module.exports = exports["default"];
 
 },{"./AudioProcessing.js":1}],3:[function(require,module,exports){
@@ -294,16 +284,39 @@ exports['default'] = SlitScan;
 module.exports = exports['default'];
 
 },{}],4:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var WebGL = function WebGL(local_stream, remote_stream) {
+  _classCallCheck(this, WebGL);
+
+  var renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.bodyinsertBefore(renderer.domElement, document.body.firstChild);
+};
+
+exports["default"] = WebGL;
+module.exports = exports["default"];
+
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var Peer = require('peerjs');
 var SlitScan = require('./js/SlitScan.js');
-var CombinedSlitScan = require('./js/CombinedSlitScan.js');
+var CanvasBlend = require('./js/CanvasBlend.js');
+var WebGL = require('./js/WebGL.js');
 var FPS = 10;
 
 var peer_api_key = '00gwj72654mfgvi';
 
 var slit, peer, dataChannel, localStream, remoteStream, slit, id, host;
+
 var communication = document.getElementById("communication");
 // Compatibility shim
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -399,7 +412,7 @@ function initVideoEvents(call, stream) {
   call.on('stream', function (theirStream) {
     //$('#their-video').prop('src', URL.createObjectURL(theirStream));
 
-    slit = new CombinedSlitScan(stream, theirStream);
+    slit = new CanvasBlend(stream, theirStream);
     hideLanding();
 
     addFrame();
@@ -472,7 +485,7 @@ function checkKey(e) {
   }
 }
 
-},{"./js/CombinedSlitScan.js":2,"./js/SlitScan.js":3,"peerjs":9}],5:[function(require,module,exports){
+},{"./js/CanvasBlend.js":2,"./js/SlitScan.js":3,"./js/WebGL.js":4,"peerjs":10}],6:[function(require,module,exports){
 module.exports.RTCSessionDescription = window.RTCSessionDescription ||
 	window.mozRTCSessionDescription;
 module.exports.RTCPeerConnection = window.RTCPeerConnection ||
@@ -480,7 +493,7 @@ module.exports.RTCPeerConnection = window.RTCPeerConnection ||
 module.exports.RTCIceCandidate = window.RTCIceCandidate ||
 	window.mozRTCIceCandidate;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
@@ -749,7 +762,7 @@ DataConnection.prototype.handleMessage = function(message) {
 
 module.exports = DataConnection;
 
-},{"./negotiator":8,"./util":11,"eventemitter3":12,"reliable":15}],7:[function(require,module,exports){
+},{"./negotiator":9,"./util":12,"eventemitter3":13,"reliable":16}],8:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Negotiator = require('./negotiator');
@@ -846,7 +859,7 @@ MediaConnection.prototype.close = function() {
 
 module.exports = MediaConnection;
 
-},{"./negotiator":8,"./util":11,"eventemitter3":12}],8:[function(require,module,exports){
+},{"./negotiator":9,"./util":12,"eventemitter3":13}],9:[function(require,module,exports){
 var util = require('./util');
 var RTCPeerConnection = require('./adapter').RTCPeerConnection;
 var RTCSessionDescription = require('./adapter').RTCSessionDescription;
@@ -1157,7 +1170,7 @@ Negotiator.handleCandidate = function(connection, ice) {
 
 module.exports = Negotiator;
 
-},{"./adapter":5,"./util":11}],9:[function(require,module,exports){
+},{"./adapter":6,"./util":12}],10:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 var Socket = require('./socket');
@@ -1656,7 +1669,7 @@ Peer.prototype.listAllPeers = function(cb) {
 
 module.exports = Peer;
 
-},{"./dataconnection":6,"./mediaconnection":7,"./socket":10,"./util":11,"eventemitter3":12}],10:[function(require,module,exports){
+},{"./dataconnection":7,"./mediaconnection":8,"./socket":11,"./util":12,"eventemitter3":13}],11:[function(require,module,exports){
 var util = require('./util');
 var EventEmitter = require('eventemitter3');
 
@@ -1872,7 +1885,7 @@ Socket.prototype.close = function() {
 
 module.exports = Socket;
 
-},{"./util":11,"eventemitter3":12}],11:[function(require,module,exports){
+},{"./util":12,"eventemitter3":13}],12:[function(require,module,exports){
 var defaultConfig = {'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]};
 var dataCount = 1;
 
@@ -2188,7 +2201,7 @@ var util = {
 
 module.exports = util;
 
-},{"./adapter":5,"js-binarypack":13}],12:[function(require,module,exports){
+},{"./adapter":6,"js-binarypack":14}],13:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2419,7 +2432,7 @@ EventEmitter.EventEmitter3 = EventEmitter;
 //
 module.exports = EventEmitter;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var BufferBuilder = require('./bufferbuilder').BufferBuilder;
 var binaryFeatures = require('./bufferbuilder').binaryFeatures;
 
@@ -2940,7 +2953,7 @@ function utf8Length(str){
   }
 }
 
-},{"./bufferbuilder":14}],14:[function(require,module,exports){
+},{"./bufferbuilder":15}],15:[function(require,module,exports){
 var binaryFeatures = {};
 binaryFeatures.useBlobBuilder = (function(){
   try {
@@ -3006,7 +3019,7 @@ BufferBuilder.prototype.getBuffer = function() {
 
 module.exports.BufferBuilder = BufferBuilder;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var util = require('./util');
 
 /**
@@ -3326,7 +3339,7 @@ Reliable.prototype.onmessage = function(msg) {};
 
 module.exports.Reliable = Reliable;
 
-},{"./util":16}],16:[function(require,module,exports){
+},{"./util":17}],17:[function(require,module,exports){
 var BinaryPack = require('js-binarypack');
 
 var util = {
@@ -3423,4 +3436,4 @@ var util = {
 
 module.exports = util;
 
-},{"js-binarypack":13}]},{},[4]);
+},{"js-binarypack":14}]},{},[5]);
