@@ -1,11 +1,13 @@
  var Peer = require('peerjs');
  var SlitScan= require('./js/SlitScan.js');
- var CombinedSlitScan= require('./js/CombinedSlitScan.js');
+ var CanvasBlend= require('./js/CanvasBlend.js');
+ var WebGL= require('./js/WebGL.js');
 var FPS = 10;
 
 var peer_api_key = '00gwj72654mfgvi';
 
 var slit, peer, dataChannel, localStream, remoteStream, slit, id, host;
+
 var communication = document.getElementById("communication");
   // Compatibility shim
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -110,7 +112,7 @@ function initVideoEvents(call, stream){
    call.on('stream', function(theirStream){
                       //$('#their-video').prop('src', URL.createObjectURL(theirStream));
     
-                      slit = new CombinedSlitScan(stream, theirStream);
+                      slit = new CanvasBlend(stream, theirStream);
                       hideLanding();
                       
 
