@@ -88,15 +88,15 @@ exports["default"] = AudioProcessing;
 module.exports = exports["default"];
 
 },{}],2:[function(require,module,exports){
-"use strict";
+'use strict';
 
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var AudioProcessing = require('./AudioProcessing.js');
 
@@ -106,6 +106,8 @@ var STEP = 1;
 var VID_STEP = 1;
 var video;
 var context;
+var blend_index = 0;
+var BLEND = ['overlay', 'difference', 'multiply', 'screen', 'darken', 'lighten', 'exclusion', 'color-burn', 'hard-light', 'soft-light', 'color', 'saturation'];
 
 var CanvasBlend = (function () {
   function CanvasBlend(local_stream, remote_stream) {
@@ -137,59 +139,78 @@ var CanvasBlend = (function () {
   }
 
   _createClass(CanvasBlend, [{
-    key: "toggleProportional",
+    key: 'toggleProportional',
     value: function toggleProportional() {
       //this.proportional = val;
       this.proportional = this.proportional == true ? false : true;
       console.log(this.proportional);
     }
   }, {
-    key: "changeMode",
+    key: 'changeMode',
     value: function changeMode() {
       this.mode++;
       if (this.mode > 2) this.mode = 0;
       console.log(this.mode);
     }
   }, {
-    key: "addData",
+    key: 'addData',
     value: function addData(data) {
       //console.log("remote vol is "+ data);
       // this.localVolume = this.localAudio.getVolume();
       this.remoteVolume = data;
     }
   }, {
-    key: "getVolume",
+    key: 'getVolume',
     value: function getVolume() {
       this.localVolume = this.localAudio.getVolume();
       return this.localVolume;
     }
   }, {
-    key: "increaseStep",
+    key: 'increaseStep',
     value: function increaseStep() {
       STEP++;
       console.log(STEP);
     }
   }, {
-    key: "restart",
+    key: 'restart',
     value: function restart() {
       this.outIndex = 0;
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }, {
-    key: "decreaseStep",
+    key: 'changeBlend',
+    value: function changeBlend() {
+      console.log("changing blend");
+
+      blend_index++;
+      if (blend_index >= BLEND.length) {
+        blend_index = 0;
+      }
+      document.getElementById("info").innerHTML = BLEND[blend_index];
+    }
+  }, {
+    key: 'decreaseStep',
     value: function decreaseStep() {
       STEP--;
       console.log(STEP);
     }
   }, {
-    key: "addFrame",
+    key: 'resize',
+    value: function resize() {
+      console.log("resizing");
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+    }
+  }, {
+    key: 'addFrame',
     value: function addFrame() {
 
       this.context = this.canvas.getContext('2d');
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.context.globalCompositeOperation = 'overlay';
-      this.context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, WIDTH, HEIGHT);
-      this.context.drawImage(this.remote, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, WIDTH, HEIGHT);
+      this.context.globalCompositeOperation = BLEND[blend_index];
+      this.context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, this.canvas.width, this.canvas.height);
+      this.context.drawImage(this.remote, 0, 0, this.remote.videoWidth, this.remote.videoHeight, 0, 0, this.canvas.width, this.canvas.height);
+
       //  this.vidIndex = this.video.videoWidth/2;
       //  var vidHeight = this.video.videoHeight;
       // // console.log(vidHeight);
@@ -219,8 +240,8 @@ var CanvasBlend = (function () {
   return CanvasBlend;
 })();
 
-exports["default"] = CanvasBlend;
-module.exports = exports["default"];
+exports['default'] = CanvasBlend;
+module.exports = exports['default'];
 
 },{"./AudioProcessing.js":1}],3:[function(require,module,exports){
 'use strict';
@@ -413,6 +434,10 @@ function initVideoEvents(call, stream) {
     //$('#their-video').prop('src', URL.createObjectURL(theirStream));
 
     slit = new CanvasBlend(stream, theirStream);
+    window.addEventListener('resize', function () {
+      slit.resize();
+    }, false);
+
     hideLanding();
 
     addFrame();
@@ -481,6 +506,8 @@ function checkKey(e) {
           //a for toggle mute
         } else if (e.keyCode == 86) {
             toggleVideo();
+          } else if (e.keyCode == 66) {
+            slit.changeBlend();
           }
   }
 }
