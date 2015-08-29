@@ -113,6 +113,10 @@ function initVideoEvents(call, stream){
                       //$('#their-video').prop('src', URL.createObjectURL(theirStream));
     
                       slit = new CanvasBlend(stream, theirStream);
+                      window.addEventListener( 'resize', function(){
+                        slit.resize();
+                      }, false );
+
                       hideLanding();
                       
 
@@ -185,6 +189,8 @@ function checkKey(e){
       //a for toggle mute
     } else if(e.keyCode==86){
       toggleVideo();
+    } else if(e.keyCode==66){
+      slit.changeBlend();
     }
 
   }

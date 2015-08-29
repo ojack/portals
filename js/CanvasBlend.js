@@ -6,7 +6,8 @@ var STEP = 1;
 var VID_STEP = 1;
 var video;
 var context;
-
+var blend_index = 0;
+var BLEND = ['overlay', 'difference', 'multiply', 'screen', 'darken', 'lighten', 'exclusion', 'color-burn', 'hard-light', 'soft-light', 'color', 'saturation'];
 
 var CanvasBlend = class CanvasBlend {
   constructor(local_stream, remote_stream){
@@ -62,18 +63,34 @@ var CanvasBlend = class CanvasBlend {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
   }
+  changeBlend(){
+    console.log("changing blend");
+
+    blend_index++;
+    if(blend_index >= BLEND.length){
+      blend_index = 0;
+    }
+    document.getElementById("info").innerHTML = BLEND[blend_index];
+  }
   decreaseStep(){
     STEP--;
      console.log(STEP);
+  }
+  resize(){
+    console.log("resizing");
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
   }
   addFrame(){
 
 
      this.context = this.canvas.getContext('2d');
      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.globalCompositeOperation = 'overlay';
-   this.context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, WIDTH, HEIGHT);
-   this.context.drawImage(this.remote, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, WIDTH, HEIGHT);
+    this.context.globalCompositeOperation = BLEND[blend_index];
+   this.context.drawImage(this.video, 0, 0, this.video.videoWidth, this.video.videoHeight, 0, 0, this.canvas.width, this.canvas.height);
+   this.context.drawImage(this.remote, 0, 0, this.remote.videoWidth, this.remote.videoHeight, 0, 0, this.canvas.width, this.canvas.height);
+
+
    //  this.vidIndex = this.video.videoWidth/2;
    //  var vidHeight = this.video.videoHeight;
    // // console.log(vidHeight);
